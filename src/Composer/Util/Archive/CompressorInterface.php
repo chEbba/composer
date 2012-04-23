@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Downloader\Util\Archive;
+namespace Composer\Util\Archive;
 
 /**
  * Archive compressor

@@ -25,10 +25,10 @@ interface PackageStorageInterface
      * Put a package in the storage
      *
      * @param PackageInterface $package
-     * @param string           $targetDir
+     * @param string           $sourceDir
      *
      * @return PackageInterface|null Stored package or null if package was not stored
      * @throws \RuntimeException If some storage related problems occurred
      */
-    public function storePackage(PackageInterface $package, $targetDir);
+    public function storePackage(PackageInterface $package, $sourceDir);
 }

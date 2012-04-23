@@ -12,10 +12,8 @@
 
 namespace Composer\Downloader\Storage;
 
-use Composer\Downloader\Util\Archive\CompressorInterface;
-use Composer\Package\MemoryPackage;
+use Composer\Util\Archive\CompressorInterface;
 use Composer\Package\PackageInterface;
-use Composer\Repository\WritableRepositoryInterface;
 
 /**
  * PackageStorageInterface local archive implementation
@@ -44,11 +42,10 @@ class ArchiveStorage implements PackageStorageInterface
      * @param CompressorInterface         $compressor Archive compressor instance
      * @param WritableRepositoryInterface $repository Writable repository to store package information
      */
-    public function __construct($storageDir, CompressorInterface $compressor, WritableRepositoryInterface $repository)
+    public function __construct($storageDir, CompressorInterface $compressor)
     {
         $this->storageDir = $storageDir;
         $this->compressor = $compressor;
-        $this->repository = $repository;
     }
 
     /**
@@ -72,32 +69,16 @@ class ArchiveStorage implements PackageStorageInterface
     }
 
     /**
-     * Get repository
-     *
-     * @return WritableRepositoryInterface
-     */
-    public function getRepository()
-    {
-        return $this->repository;
-    }
-
-    /**
      * {@inheritDoc}
      */
-    public function storePackage(PackageInterface $package, $targetDir)
+    public function storePackage(PackageInterface $package, $sourceDir)
     {
         $storedPackage = $this->createStoredPackage($package);
-        // If package archive is not exist, add it
-        if (!file_exists($storedPackage->getDistUrl())) {
-            $this->compressor->compressDir($targetDir, $storedPackage->getDistUrl());
-        }
-        $storedPackage->setDistSha1Checksum(sha1_file($storedPackage->getDistUrl()));
 
-        // TODO: may be need to catch and rethrow RuntimeException
-        $this->repository->addPackage($package);
-        // Don't remove file if we can't add it to repository. Package can be added next time
+        $fileName = $this->packageFilename($package);
+        $this->compressor->compressDir($sourceDir, $fileName);
 
-        return $storedPackage;
+        return new Distribution($this->compressor->getArchiveType(), $fileName, sha1_file($fileName));
     }
 
     /**
@@ -110,22 +91,5 @@ class ArchiveStorage implements PackageStorageInterface
     private function packageFilename(PackageInterface $package)
     {
         return sprintf('%s/%s.%s', $this->storageDir, $package->getUniqueName(), $this->compressor->getArchiveType());
-    }
-
-    /**
-     * Create package copy for storage
-     *
-     * @param PackageInterface $package Original package
-     *
-     * @return MemoryPackage
-     */
-    private function createStoredPackage(PackageInterface $package)
-    {
-        $package = MemoryPackage::fromPackage($package);
-        $package->setDistType($this->compressor->getArchiveType());
-        $package->setDistUrl($this->packageFilename($package));
-        $package->setDistReference('');
-
-        return $package;
     }
 }
