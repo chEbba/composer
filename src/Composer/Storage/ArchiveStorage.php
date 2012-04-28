@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Downloader\Storage;
+namespace Composer\Storage;
 
 use Composer\Util\Archive\CompressorInterface;
 use Composer\Package\PackageInterface;

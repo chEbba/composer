@@ -10,9 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Downloader\Storage;
+namespace Composer\Storage;
 
-use \Composer\Package\PackageInterface;
+use Composer\Package\PackageInterface;
 
 /**
  * Storage for packages
@@ -27,7 +27,7 @@ interface PackageStorageInterface
      * @param PackageInterface $package
      * @param string           $sourceDir
      *
-     * @return PackageInterface|null Stored package or null if package was not stored
+     * @return PackageDistribution
      * @throws \RuntimeException If some storage related problems occurred
      */
     public function storePackage(PackageInterface $package, $sourceDir);
