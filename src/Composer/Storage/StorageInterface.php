@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
  * 
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-interface PackageStorageInterface
+interface StorageInterface
 {
     /**
      * Put a package in the storage
@@ -31,4 +31,13 @@ interface PackageStorageInterface
      * @throws \RuntimeException If some storage related problems occurred
      */
     public function storePackage(PackageInterface $package, $sourceDir);
+
+    /**
+     * Get package from the storage
+     *
+     * @param PackageInterface $package
+     *
+     * @return PackageDistribution|null If package is not found null is returned
+     */
+    public function retrievePackage(PackageInterface $package);
 }

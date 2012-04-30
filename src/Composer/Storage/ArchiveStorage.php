@@ -20,7 +20,7 @@ use Composer\Package\PackageInterface;
  * 
  * @author Kirill chEbba Chebunin <iam@chebba.org>
  */
-class ArchiveStorage implements PackageStorageInterface
+class ArchiveStorage implements StorageInterface
 {
     /**
      * @var string
@@ -73,12 +73,26 @@ class ArchiveStorage implements PackageStorageInterface
      */
     public function storePackage(PackageInterface $package, $sourceDir)
     {
-        $storedPackage = $this->createStoredPackage($package);
-
         $fileName = $this->packageFilename($package);
+
+        $dir = pathinfo(PATHINFO_DIRNAME);
+        if (!is_dir($dir) || !@mkdir($dir, 0777, true)) {
+            throw new \RuntimeException('Can not initialize directory structure in ' . $dir);
+        }
+
         $this->compressor->compressDir($sourceDir, $fileName);
 
-        return new Distribution($this->compressor->getArchiveType(), $fileName, sha1_file($fileName));
+        return $this->createDistribution($fileName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function retrievePackage(PackageInterface $package)
+    {
+        $fileName = $this->packageFilename($package);
+
+        return file_exists($fileName) ? $this->createDistribution($fileName) : null;
     }
 
     /**
@@ -91,5 +105,17 @@ class ArchiveStorage implements PackageStorageInterface
     private function packageFilename(PackageInterface $package)
     {
         return sprintf('%s/%s.%s', $this->storageDir, $package->getUniqueName(), $this->compressor->getArchiveType());
+    }
+
+    /**
+     * Create a distribution object for file
+     *
+     * @param $fileName
+     *
+     * @return PackageDistribution
+     */
+    private function createDistribution($fileName)
+    {
+        return new PackageDistribution($this->compressor->getArchiveType(), $fileName, @sha1_file($fileName));
     }
 }

@@ -12,7 +12,7 @@
 
 namespace Composer\Downloader;
 
-use Composer\Downloader\Storage\PackageStorageInterface;
+use Composer\Storage\StorageInterface;
 use Composer\Package\PackageInterface;
 
 /**
@@ -24,15 +24,15 @@ use Composer\Package\PackageInterface;
 class CachedDownloadManager extends DownloadManager
 {
     /**
-     * @var PackageStorageInterface
+     * @var StorageInterface
      */
     private $storage;
 
     /**
-     * @param PackageStorageInterface $storage      Package cache storage
-     * @param bool                    $preferSource Prefer downloading source
+     * @param StorageInterface $storage      Package cache storage
+     * @param bool             $preferSource Prefer downloading source
      */
-    public function __construct(PackageStorageInterface $storage, $preferSource = false)
+    public function __construct(StorageInterface $storage, $preferSource = false)
     {
         $this->storage = $storage;
         parent::__construct($preferSource);
@@ -41,7 +41,7 @@ class CachedDownloadManager extends DownloadManager
     /**
      * Get storage
      *
-     * @return PackageStorageInterface
+     * @return StorageInterface
      */
     public function getStorage()
     {
@@ -54,7 +54,9 @@ class CachedDownloadManager extends DownloadManager
     public function download(PackageInterface $package, $targetDir, $preferSource = null)
     {
         parent::download($package, $targetDir, $preferSource);
-        $this->storage->storePackage($package, $targetDir);
+        if ($package->getDistType() === 'dist') {
+            $this->storage->storePackage($package, $targetDir);
+        }
     }
 
     /**
@@ -63,7 +65,8 @@ class CachedDownloadManager extends DownloadManager
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
         parent::update($initial, $target, $targetDir);
-        $this->storage->storePackage($target, $targetDir);
+        if ($target->getDistType() === 'dist') {
+            $this->storage->storePackage($target, $targetDir);
+        }
     }
-
 }
